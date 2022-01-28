@@ -2,7 +2,6 @@ from unicodedata import decomposition
 import streamlit as st
 import pandas as pd
 import numpy as np
-import spacy
 from scipy import linalg
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn import decomposition
@@ -40,7 +39,7 @@ TfidfVectorizer. CountVectorizer simply counts the tokens in each document, whil
 common words aren't weighted too heavily.
 
 You can also decide whether or not you want to exclude stop words or not. Stop words are common words that appear in most of the documents 
-used in the modeling process. If you want to exlcude stop words, you can choose between Scikit-learn's stop word list or spaCy's.
+used in the modeling process. If you want to exlcude stop words, you can choose to use Scikit-learn's stop words list.
 """)
 
 @st.cache
@@ -66,7 +65,7 @@ st.sidebar.markdown(
 
 add_selectbox_stopwords = st.sidebar.selectbox(
     "Stop Words",
-    ("No stop words", "Scikit-learn", "spaCy")
+    ("No stop words", "Scikit-learn")
 )
 
 add_selectbox_tokenizer = st.sidebar.selectbox(
@@ -90,24 +89,16 @@ add_selectbox_topic_words = st.sidebar.selectbox(
 )
 
 
-# get stopwords from Spacy
-spacy_nlp = spacy.load("en_core_web_sm")
-spacy_stopwords = list(spacy_nlp.Defaults.stop_words)
-
 if add_selectbox_tokenizer == "CountVectorizer":
     if add_selectbox_stopwords == "No stop words":
         vect = CountVectorizer()
-    elif add_selectbox_stopwords == "Scikit-learn":
-        vect = CountVectorizer(stop_words="english")
     else:
-        vect = CountVectorizer(stop_words=spacy_stopwords)
+        vect = CountVectorizer(stop_words="english")
 else:
     if add_selectbox_stopwords == "No stop words":
         vect = TfidfVectorizer()
-    elif add_selectbox_stopwords == "Scikit-learn":
-        vect = TfidfVectorizer(stop_words="english")
     else:
-        vect = TfidfVectorizer(stop_words=spacy_stopwords)
+        vect = TfidfVectorizer(stop_words="english")
 
 data_tokenized = vect.fit_transform(scripts).todense()
 vocab_words = np.array(vect.get_feature_names_out())
