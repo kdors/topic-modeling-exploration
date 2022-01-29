@@ -6,7 +6,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn import decomposition
 
 
-st.title("Exploring Topic Modeling with Bob's Burgers :hamburger:")
+st.title("Explore Topic Modeling with Bob's Burgers :hamburger:")
 
 st.markdown("""
 ### Some Background
@@ -22,9 +22,9 @@ As I get more experience with topic modeling, I hope to add more to this app!
 
 Bob's Burgers is one of my favorite TV shows to watch when I want to relax and enjoy wholesome family TV.
 
-If you have never watched the show, it's about all of the crazy things that happen to a middle-class family of size five that own a burger 
-place. You check out the [wiki](https://en.wikipedia.org/wiki/Bob%27s_Burgers) that will go much more in depth if you're interested 
-(Or you can always just watch an episode or two!). 
+If you have never watched the show, it's about all of the crazy things that happen to a middle-class family of size five (parents Bob and 
+Linda, children Tina, Gene, and Louise) that own a burger place. You can check out the [wiki](https://en.wikipedia.org/wiki/Bob%27s_Burgers) 
+that will go much more in depth if you're interested (Or you can always just watch an episode or two!). 
 
 ### Let's do some topic modeling
 
@@ -34,7 +34,7 @@ The data used are the scripts of Bob's Burgers episodes from seasons 1-5. You ca
 ### Term Frequency
 
 There are different methods for tokenization and for deciding how to count the tokens/terms. In this app, you can use CountVectorizer or
-TfidfVectorizer. CountVectorizer simply counts the tokens in each document, while TfidfVectorizer also normalizes them so that super
+TfidfVectorizer. CountVectorizer counts the tokens in each document, while TfidfVectorizer also normalizes them so that super
 common words aren't weighted too heavily.
 
 You can also decide whether or not you want to exclude stop words or not. Stop words are common words that appear in most of the documents 
@@ -111,19 +111,22 @@ st.metric(label="Number of episodes", value=len(scripts))
 
 st.metric(label="Vocabulary Length", value=len(vocab_words))
 
-st.write("A sneak peek at some vocabulary words after term vectorization:")
+st.write("A sneak peek at some vocabulary words after tokenization:")
 
-word_counts = [vect.vocabulary_[val] for val in vocab_words[100::700]]
-df = pd.DataFrame({"Term":vocab_words[100::700], "Count":word_counts})
-st.table(df)
+st.write(vocab_words[100::1000])
+
+st.write("After using CountVectorizer/TfidfVectorizer, the resulting vector shape is:", data_tokenized.shape, 
+        "as expected (number of episodes x number of terms).")
 
 
 st.markdown(
     """
     ### Matrix Factorization
 
-    The two options in this app for matrix facorzation are SVD (singular value decomposition) and NMF (nonnegative matrix 
-    factorization). SVD produces an exact decompositon of the data matrix, while NMF is non-exact.
+    The two options in this app for matrix factorization are SVD (singular value decomposition) and NMF (nonnegative matrix 
+    factorization). SVD produces an exact decompositon of the data matrix, while NMF produces a non-exact decomposition. 
+
+    SVD can be really show with a large document-term matrix, but since we only have 88 episodes here, it's decently fast.
     """
 )
 
@@ -143,3 +146,45 @@ else:
     W1 = nmf_decomp.fit_transform(data_tokenized)
     H1 = nmf_decomp.components_
     st.write(show_topics(H1))
+
+st.markdown(
+    """
+    ### How well does it work?
+
+    If I pick a Christmas episode, say **4x08 "Christmas in a Car",** are there any topics above that seem Christmas-y, 
+    and does the episode correspond the most with that topic? (If you don't see a topic with any Christmas-adjacent words, 
+    try adding more topics!).
+
+    Let's find out. The indeces of the table below match the topics generated above and the numbers next to them correspond to
+    how well each topic matches episode 4x08, with the higher number meaning the more you can find that topic in the episode script.
+    """
+)
+
+st.write(U[52,:add_topic_num])
+
+episode = st.selectbox("Try it out with different episodes!", 
+            ("1x06 Sheesh! Cab, Bob?","2x08 Bad Tina", "3x12 Broadcast Wagstaff School News",
+            "3x13 My Fuzzy Valentine", "4x02 Full Bars (Halloween episode)", "4x05 Turkey in a Can (Thanksgiving episode)", 
+            "4x20 Gene It On", "5x04 Dawn of the Peck (Thanksgiving episode)", "5x06 Father of the Bob (Christmas episode)",
+            "5x10 Late Afternoon in the Garden of Bob and Louise"))
+
+if episode[:4] == "1x06":
+    st.write(U[5,:add_topic_num])
+elif episode[:4] == "2x08":
+    st.write(U[20,:add_topic_num])
+elif episode[:4] == "3x12":
+    st.write(U[33,:add_topic_num])
+elif episode[:4] == "3x13":
+    st.write(U[34,:add_topic_num])
+elif episode[:4] == "4x02":
+    st.write(U[46,:add_topic_num])
+elif episode[:4] == "4x05":
+    st.write(U[49,:add_topic_num])
+elif episode[:4] == "4x20":
+    st.write(U[64,:add_topic_num])
+elif episode[:4] == "5x04":
+    st.write(U[70,:add_topic_num])
+elif episode[:4] == "5x06":
+    st.write(U[72,:add_topic_num])
+else:
+    st.write(U[76,:add_topic_num])
