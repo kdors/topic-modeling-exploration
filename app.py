@@ -28,7 +28,7 @@ place. You check out the [wiki](https://en.wikipedia.org/wiki/Bob%27s_Burgers) t
 
 ### Let's do some topic modeling
 
-The data used are the scripts of Bob's Burgers episodes from seasons 1-3. You can see the scraping and cleaning process in this 
+The data used are the scripts of Bob's Burgers episodes from seasons 1-5. You can see the scraping and cleaning process in this 
 [notebook.](https://github.com/kdors/topic-modeling-exploration/blob/main/topicmodeling.ipynb) I hope to add more seasons in the future!
 
 ### Term Frequency
@@ -44,7 +44,7 @@ used in the modeling process. If you want to exlcude stop words, you can choose 
 @st.cache
 def get_data():
     data = []
-    with open("scripts_file.txt", "r", encoding="UTF-8") as inpt:
+    with open("bb_scripts_file.txt", "r", encoding="UTF-8") as inpt:
         for episode in inpt:
             data.append(episode) 
         
@@ -62,48 +62,54 @@ st.sidebar.markdown(
     """
 )
 
-add_selectbox_stopwords = st.sidebar.selectbox(
+
+add_stopwords = st.sidebar.selectbox(
     "Stop Words",
     ("No stop words", "Scikit-learn")
 )
 
-add_selectbox_tokenizer = st.sidebar.selectbox(
+add_vectorizer = st.sidebar.selectbox(
     "Term Vectorization",
     ("CountVectorizer", "TFIDFVectorizer")
 )
 
-add_selectbox_factorization = st.sidebar.selectbox(
+add_factorization = st.sidebar.selectbox(
     "Matrix Factorization",
     ("SVD", "NMF")
 )
 
-add_selectbox_topics = st.sidebar.selectbox(
-    "Number of topics",
-    (5, 10, 20, 30, 40)
-)
+add_topic_num = st.sidebar.slider(
+    "Number of topics", 5, 40, 8)
 
-add_selectbox_topic_words = st.sidebar.selectbox(
-    "Number of words per topic",
-    (5, 8, 10)
-)
+add_words_num = st.sidebar.slider(
+    "Number of words per topic", 5, 20, 8)
+
+num_top_words = add_words_num
+@st.cache
+def show_topics(arr):
+    top_words = lambda t: [vocab_words[i] for i in np.argsort(t)[:-num_top_words-1:-1]]
+    topic_words = ([top_words(t) for t in arr])
+    return [' '.join(t) for t in topic_words]
 
 
-if add_selectbox_tokenizer == "CountVectorizer":
-    if add_selectbox_stopwords == "No stop words":
+if add_vectorizer == "CountVectorizer":
+    if add_stopwords == "No stop words":
         vect = CountVectorizer()
     else:
         vect = CountVectorizer(stop_words="english")
 else:
-    if add_selectbox_stopwords == "No stop words":
+    if add_stopwords == "No stop words":
         vect = TfidfVectorizer()
     else:
         vect = TfidfVectorizer(stop_words="english")
 
+
 data_tokenized = vect.fit_transform(scripts).todense()
 vocab_words = np.array(vect.get_feature_names_out())
 
-st.write("Number of Documents: ", len(scripts))
-st.write("Vocabulary size: ", len(vocab_words))
+st.metric(label="Number of episodes", value=len(scripts))
+
+st.metric(label="Vocabulary Length", value=len(vocab_words))
 
 st.write("A sneak peek at some vocabulary words after term vectorization:")
 
@@ -127,18 +133,13 @@ st.markdown(
     """
 )
 
-num_top_words = add_selectbox_topic_words
-def show_topics(arr):
-    top_words = lambda t: [vocab_words[i] for i in np.argsort(t)[:-num_top_words-1:-1]]
-    topic_words = ([top_words(t) for t in arr])
-    return [' '.join(t) for t in topic_words]
 
-if add_selectbox_factorization == "SVD":
+if add_factorization == "SVD":
     U, S, V_t = linalg.svd(data_tokenized, full_matrices=False)
-    st.write(show_topics(V_t[:add_selectbox_topics]))  
+    st.write(show_topics(V_t[:add_topic_num]))  
 
 else:
-    nmf_decomp = decomposition.NMF(n_components=add_selectbox_topics, random_state=1)
+    nmf_decomp = decomposition.NMF(n_components=add_topic_num, random_state=1)
     W1 = nmf_decomp.fit_transform(data_tokenized)
     H1 = nmf_decomp.components_
     st.write(show_topics(H1))
