@@ -138,7 +138,7 @@ st.markdown(
 
 
 if add_factorization == "SVD":
-    U, S, V_t = linalg.svd(data_tokenized, full_matrices=False)
+    episode_topic, S, V_t = linalg.svd(data_tokenized, full_matrices=False)
     st.write(show_topics(V_t[:add_topic_num]))  
 
 else:
@@ -147,20 +147,27 @@ else:
     H1 = nmf_decomp.components_
     st.write(show_topics(H1))
 
+if add_factorization == "SVD":
+    episode_topic = episode_topic
+else:
+    episode_topic = W1
+
 st.markdown(
     """
     ### How well does it work?
+
+    Is there some configuration that produces good results?
 
     If I pick a Christmas episode, say **4x08 "Christmas in a Car",** are there any topics above that seem Christmas-y, 
     and does the episode correspond the most with that topic? (If you don't see a topic with any Christmas-adjacent words, 
     try adding more topics!).
 
-    Let's find out. The indeces of the table below match the topics generated above and the numbers next to them correspond to
+    Let's find out. The indices of the table below match the topics generated above and the numbers next to them correspond to
     how well each topic matches episode 4x08, with the higher number meaning the more you can find that topic in the episode script.
     """
 )
 
-st.write(U[52,:add_topic_num])
+st.write(episode_topic[52,:add_topic_num])
 
 episode = st.selectbox("Try it out with different episodes!", 
             ("1x06 Sheesh! Cab, Bob?","2x08 Bad Tina", "3x12 Broadcast Wagstaff School News",
@@ -168,23 +175,24 @@ episode = st.selectbox("Try it out with different episodes!",
             "4x20 Gene It On", "5x04 Dawn of the Peck (Thanksgiving episode)", "5x06 Father of the Bob (Christmas episode)",
             "5x10 Late Afternoon in the Garden of Bob and Louise"))
 
+
 if episode[:4] == "1x06":
-    st.write(U[5,:add_topic_num])
+    st.write(episode_topic[5,:add_topic_num])
 elif episode[:4] == "2x08":
-    st.write(U[20,:add_topic_num])
+    st.write(episode_topic[20,:add_topic_num])
 elif episode[:4] == "3x12":
-    st.write(U[33,:add_topic_num])
+    st.write(episode_topic[33,:add_topic_num])
 elif episode[:4] == "3x13":
-    st.write(U[34,:add_topic_num])
+    st.write(episode_topic[34,:add_topic_num])
 elif episode[:4] == "4x02":
-    st.write(U[46,:add_topic_num])
+    st.write(episode_topic[46,:add_topic_num])
 elif episode[:4] == "4x05":
-    st.write(U[49,:add_topic_num])
+    st.write(episode_topic[49,:add_topic_num])
 elif episode[:4] == "4x20":
-    st.write(U[64,:add_topic_num])
+    st.write(episode_topic[64,:add_topic_num])
 elif episode[:4] == "5x04":
-    st.write(U[70,:add_topic_num])
+    st.write(episode_topic[70,:add_topic_num])
 elif episode[:4] == "5x06":
-    st.write(U[72,:add_topic_num])
+    st.write(episode_topic[72,:add_topic_num])
 else:
-    st.write(U[76,:add_topic_num])
+    st.write(episode_topic[76,:add_topic_num])
